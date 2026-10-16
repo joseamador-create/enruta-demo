@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>En Ruta</title>
+<meta name="description" content="Demo de app de rutas para comerciales — by·amador">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0D0E11">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="En Ruta">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.png">
+<style>
+@font-face{font-family:"Fraunces";src:url("fraunces.woff2") format("woff2-variations");font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
+@font-face{font-family:"Inter";src:url("inter.woff2") format("woff2-variations");font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{overscroll-behavior-y:contain}
+body{margin:0;font:14px system-ui,-apple-system,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<style>
+/* Layout: columna de móvil (máx. 460px) sobre fondo beige; cabecera negra, acentos naranja; tarjetas claras que se arrastran; hoja inferior para registrar la visita */
+:root{
+  --bg:#F3EDE3; --paper:#FFFCF6; --sand:#E9E0D2; --line:#DDD2C1;
+  --ink:#0D0E11; --ink-2:#1C1E23; --muted:#7B746A; --on-ink:#F6F1E8; --on-ink-muted:#A9A398;
+  --accent:#E8470F; --accent-soft:#FBE3D8; --accent-ink:#B5360A;
+  --ok:#1E9E5A; --ok-soft:#DDF1E5; --warn:#B87908; --warn-soft:#F8EBCC; --info:#2F6FB5; --info-soft:#DDE9F6;
+  --display:"Fraunces", Georgia, serif; --body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:460px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+.wrap{padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+
+/* --- Login: bloque negro arriba, teclado sobre beige --- */
+#login{flex:1;display:flex;flex-direction:column}
+.hero{background:var(--ink);color:var(--on-ink);padding-block:56px 40px;border-radius:0 0 32px 32px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.brand{font-family:var(--display);font-weight:700;font-size:46px;letter-spacing:-1px;line-height:1}
+.brand i{font-style:normal;color:var(--accent)}
+.hero p{margin:0;color:var(--on-ink-muted);font-size:14px}
+.lock{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-block:28px}
+.lock .sub{color:var(--muted);font-size:14px}
+.dots{display:flex;gap:14px}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);transition:.15s}
+.dot.on{background:var(--accent);border-color:var(--accent);transform:scale(1.1)}
+.pad{display:grid;grid-template-columns:repeat(3,74px);gap:14px}
+.pad button{height:74px;border-radius:50%;background:var(--paper);font-size:26px;font-weight:600;box-shadow:0 1px 0 var(--line);transition:transform .08s}
+.pad button:active{transform:scale(.92);background:var(--sand)}
+.by{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.by b{font-family:var(--display);text-transform:none;letter-spacing:0;color:var(--ink);font-size:14px}
+.by b i{font-style:normal;color:var(--accent)}
+
+/* --- Cabecera negra --- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ink);color:var(--on-ink);padding-block:14px;display:flex;align-items:center;gap:12px}
+.top h1{margin:0;font-size:19px;font-weight:800;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .mini{font-family:var(--display);font-weight:700;font-size:15px;color:var(--on-ink-muted)}
+.top .mini i{font-style:normal;color:var(--accent)}
+.iconbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--ink-2);color:var(--on-ink);flex:none}
+.iconbtn svg{width:20px;height:20px}
+.headband{background:var(--ink);color:var(--on-ink);padding-block:0 18px;border-radius:0 0 26px 26px}
+
+/* --- Rutas --- */
+.hello{margin:4px 0 0;color:var(--on-ink-muted);font-size:14px}
+.hello b{color:var(--on-ink)}
+.routes{display:flex;flex-direction:column;gap:12px;padding-block:18px 24px}
+.route{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left}
+.route .av{width:46px;height:46px;border-radius:14px;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+.route:first-child .av{background:var(--accent)}
+.route strong{display:block;font-size:17px}
+.route span{color:var(--muted);font-size:13px}
+.route .chev{margin-left:auto;color:var(--muted);flex:none}
+
+/* --- Días y progreso (dentro de la banda negra) --- */
+.days{display:flex;gap:8px;padding-block:2px 14px}
+.days button{flex:1;min-width:0;padding:10px 0;border-radius:12px;background:var(--ink-2);color:var(--on-ink-muted);font-weight:600;font-size:14px}
+.days button.on{background:var(--accent);color:#fff}
+.prog{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--on-ink-muted)}
+.prog b{color:var(--on-ink);font-variant-numeric:tabular-nums}
+.bar{flex:1;height:8px;border-radius:8px;background:var(--ink-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:8px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.hint{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);padding-block:14px 10px}
+.hint svg{flex:none}
+
+/* --- Tarjetas --- */
+.list{display:flex;flex-direction:column;gap:10px;padding-bottom:110px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;transition:border-color .3s,background .3s,box-shadow .2s;position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.card.press{transform:scale(.985);transition:transform .35s ease}
+.card.done{border-color:#A9D9BC;background:#FBFDF9}
+.card.flash{animation:flash .9s ease}
+@keyframes flash{0%{background:var(--ok-soft)}100%{background:#FBFDF9}}
+.card.drag{z-index:4;box-shadow:0 18px 40px rgba(13,14,17,.22);border-color:var(--accent);transition:box-shadow .2s;cursor:grabbing}
+.row{display:flex;gap:12px;align-items:flex-start;padding:14px}
+.chk{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:#fff;flex:none;display:grid;place-items:center;margin-top:1px;transition:.2s}
+.card.done .chk{background:var(--ok);border-color:var(--ok)}
+.chk svg{width:18px;height:18px;opacity:0}
+.card.done .chk svg{opacity:1}
+.cbody{flex:1;min-width:0;text-align:left;padding:0}
+.cname{font-weight:700;font-size:15.5px;line-height:1.25;display:flex;align-items:center;gap:8px}
+.num{font-size:11px;font-weight:800;color:var(--muted);background:var(--sand);border-radius:6px;padding:2px 6px;font-variant-numeric:tabular-nums;flex:none}
+.ctype{color:var(--muted);font-size:12.5px;margin-top:3px}
+.note{font-size:13px;color:var(--accent-ink);margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--sand);color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.info{background:var(--info-soft);color:var(--info)}
+.chip.acc{background:var(--accent-soft);color:var(--accent-ink)}
+.contact{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+.card.open .contact{grid-template-rows:1fr}
+.contact>div{overflow:hidden}
+.cin{margin:0 14px 14px;padding:12px;border-radius:14px;background:var(--bg);display:flex;flex-direction:column;gap:8px}
+.cl{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.cl svg{flex:none;margin-top:1px;color:var(--muted)}
+.cl small{display:block;color:var(--muted);font-size:12px}
+.acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}
+.acts a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;font-size:12.5px;font-weight:700;background:var(--paper);border:1px solid var(--line)}
+.acts a.call{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.acts a.wa{background:var(--accent);color:#fff;border-color:var(--accent)}
+.more{font-size:12px;font-weight:600;color:var(--muted);margin-top:8px;display:inline-flex;align-items:center;gap:4px}
+.card.open .more svg{transform:rotate(180deg)}
+
+/* --- Oficina --- */
+.live{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6BE19E}
+.live i{width:8px;height:8px;border-radius:50%;background:#6BE19E;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(107,225,158,.6)}100%{box-shadow:0 0 0 10px rgba(107,225,158,0)}}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-block:16px 6px}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px}
+.kpi span{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.kpi b{display:block;font-size:25px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi.hl{background:var(--accent);border-color:var(--accent);color:#fff}
+.kpi.hl span{color:rgba(255,255,255,.85)}
+.kpi.dk{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.kpi.dk span{color:var(--on-ink-muted)}
+.feedh{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding-block:12px 8px}
+.feed{display:flex;flex-direction:column;gap:8px;padding-bottom:110px}
+.ev{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.ev time{font-weight:800;font-variant-numeric:tabular-nums;font-size:14px;min-width:44px}
+.ev .t{flex:1;min-width:0;font-size:14px}
+.ev .t small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.ev.new{animation:flash2 1.2s ease}
+@keyframes flash2{0%{background:var(--accent-soft);border-color:var(--accent)}100%{background:var(--paper)}}
+.empty{color:var(--muted);text-align:center;padding:30px 10px;font-size:14px}
+
+/* --- Navegación inferior --- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav .in{max-width:460px;margin:0 auto;display:flex;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.nav button{flex:1;padding:12px 0 14px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--muted)}
+.nav button svg{width:22px;height:22px}
+.nav button.on{color:var(--accent)}
+
+/* --- Hoja --- */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(13,14,17,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:460px;margin:0 auto;background:var(--paper);border-radius:24px 24px 0 0;
+  transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.9,.25,1);padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet.open{transform:none}
+.grab{width:40px;height:5px;border-radius:5px;background:var(--line);margin:10px auto 6px}
+.sheet h2{margin:6px 0 2px;font-size:19px;font-weight:800}
+.gps{display:inline-flex;align-items:center;gap:6px;color:var(--ok);background:var(--ok-soft);font-size:13px;font-weight:700;margin-top:8px;padding:5px 10px;border-radius:999px}
+.lbl{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 8px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts button{padding:13px 10px;border-radius:12px;background:var(--bg);font-weight:600;font-size:14px;border:2px solid transparent}
+.opts button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.field{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--ink);font:inherit;font-size:16px}
+.money{position:relative}
+.money span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
+.save{width:100%;margin-top:18px;padding:16px;border-radius:14px;background:var(--ink);color:var(--on-ink);font-weight:800;font-size:16px;display:flex;justify-content:center;gap:8px;align-items:center}
+.save i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.save:active{transform:scale(.98)}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);z-index:30;background:var(--ink);color:var(--on-ink);
+  font-weight:700;font-size:14px;padding:11px 18px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.toast i{width:8px;height:8px;border-radius:50%;background:#6BE19E}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.demo{font-size:11px;color:var(--muted);text-align:center;padding-top:8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- LOGIN -->
+  <section id="login">
+    <div class="hero wrap">
+      <div class="brand">En&nbsp;Ruta<i>.</i></div>
+      <p>Las visitas de tus comerciales, en directo</p>
+    </div>
+    <div class="lock wrap">
+      <div class="sub">Introduce tu PIN</div>
+      <div class="dots" id="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="pad" id="pad"></div>
+      <div class="by">hecho por <b>by<i>·</i>amador</b></div>
+    </div>
+  </section>
+
+  <!-- RUTAS -->
+  <section id="vRoutes" hidden>
+    <div class="top wrap"><h1>Elige tu ruta</h1>
+      <button class="iconbtn" id="resetBtn" aria-label="Reiniciar demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+    </div>
+    <div class="headband wrap"><p class="hello">Hola, <b>Laura</b> · Comercial zona costa</p></div>
+    <div class="routes wrap" id="routeList"></div>
+  </section>
+
+  <!-- RUTA -->
+  <section id="vRoute" hidden>
+    <div class="top wrap">
+      <button class="iconbtn" id="backBtn" aria-label="Cambiar de ruta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <h1 id="routeTitle">Ruta</h1><span class="mini">by<i>·</i>amador</span>
+    </div>
+    <div class="headband wrap">
+      <div class="days" id="days"></div>
+      <div class="prog"><span><b id="pDone">0</b>/<b id="pTot">0</b> visitados</span><div class="bar"><i id="pBar" style="width:0"></i></div></div>
+    </div>
+    <div class="wrap">
+      <div class="hint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5"/><path d="M12 10V8.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 10.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-.5a6 6 0 0 1-4.6-2.2L4.3 15.5a1.5 1.5 0 0 1 2.3-1.9L9 16V11"/></svg>Mantén pulsado un cliente y arrástralo para ordenar · tócalo para ver su contacto</div>
+    </div>
+    <div class="list wrap" id="list"></div>
+  </section>
+
+  <!-- OFICINA -->
+  <section id="vOffice" hidden>
+    <div class="top wrap"><h1>Oficina</h1><span class="live"><i></i>En directo</span></div>
+    <div class="wrap">
+      <div class="kpis">
+        <div class="kpi hl"><span>Visitas hoy</span><b id="kVis">0/0</b></div>
+        <div class="kpi dk"><span>Pedidos</span><b id="kPed">0 €</b></div>
+        <div class="kpi"><span>Cobrado</span><b id="kCob">0 €</b></div>
+        <div class="kpi"><span>Pendiente</span><b id="kPen">0 €</b></div>
+      </div>
+      <div class="feedh">Últimas visitas</div>
+      <div class="feed" id="feed"></div>
+    </div>
+  </section>
+</div>
+
+<nav class="nav" id="nav" hidden><div class="in">
+  <button id="nRoute" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Ruta</button>
+  <button id="nOffice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Oficina</button>
+</div></nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sName">
+  <div class="grab"></div>
+  <div class="wrap">
+    <h2 id="sName">Cliente</h2>
+    <div class="gps"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span id="sGps">Ubicación comprobada · a 9 m</span></div>
+    <div class="lbl">Resultado de la visita</div>
+    <div class="opts" id="opts"></div>
+    <div class="lbl">Importe</div>
+    <div class="money"><input class="field" id="sImp" inputmode="decimal" placeholder="0,00" autocomplete="off"><span>€</span></div>
+    <div class="lbl">Nota</div>
+    <input class="field" id="sNota" placeholder="Ej.: volver el martes" autocomplete="off">
+    <button class="save" id="sSave"><i></i>Guardar visita</button>
+    <div class="demo">Demo con datos inventados</div>
+  </div>
+</div>
+<div class="toast" id="toast"><i></i><span id="toastT">Visita guardada · la oficina ya la ve</span></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const ROUTES=[
+  {id:'costa',name:'Costa',desc:'Clínicas y tiendas del litoral',clients:[
+    {id:'c1',n:'Clínica Veterinaria San Roque',t:'Clínica veterinaria · Domiciliado',note:'Llevar muestras de pienso senior',p:'Dra. Marta Ruiz',tel:'600 11 22 01',dir:'Av. del Mar, 12',hor:'9:00–14:00 · 17:00–20:00'},
+    {id:'c2',n:'Animalia Tienda de Mascotas',t:'Tienda · Contado',p:'Javier (encargado)',tel:'600 11 22 02',dir:'C/ Real, 45',hor:'10:00–14:00 · 17:30–20:30'},
+    {id:'c3',n:'Peluquería Canina Guau',t:'Peluquería · Transferencia',note:'Abre a las 10:00',p:'Lucía',tel:'600 11 22 03',dir:'Pza. de la Constitución, 3',hor:'10:00–19:00'},
+    {id:'c4',n:'Clínica Vet Los Pinos',t:'Clínica veterinaria · Mensual',note:'Cobrar factura de septiembre',p:'Dr. Andrés Molina',tel:'600 11 22 04',dir:'Urb. Los Pinos, local 4',hor:'9:30–13:30 · 16:30–20:00'},
+    {id:'c5',n:'Mascotas del Mar',t:'Tienda · Contado',p:'Rocío',tel:'600 11 22 05',dir:'Paseo Marítimo, 88',hor:'10:00–21:00'},
+    {id:'c6',n:'Hospital Veterinario Costa Sol',t:'Hospital · Mensual',note:'Preguntar por la oferta de antiparasitarios',p:'Compras: Elena Torres',tel:'600 11 22 06',dir:'Ctra. de la Costa, km 3',hor:'24 horas'},
+    {id:'c7',n:'Acuarios Neptuno',t:'Tienda especializada · Contado',p:'Pablo',tel:'600 11 22 07',dir:'C/ Sol, 9',hor:'10:00–14:00 · 17:00–20:00'},
+    {id:'c8',n:'Granja Escuela El Olivar',t:'Granja · Transferencia',note:'Pedido grande de pienso cada 15 días',p:'Antonio',tel:'600 11 22 08',dir:'Camino del Olivar, s/n',hor:'8:00–15:00'}]},
+  {id:'axarquia',name:'Axarquía',desc:'Pueblos del interior',clients:[
+    {id:'a1',n:'Clínica Veterinaria La Fuente',t:'Clínica veterinaria · Mensual',p:'Dr. Luis Prado',tel:'600 33 44 01',dir:'C/ Fuente, 2',hor:'9:00–14:00'},
+    {id:'a2',n:'Agro Piensos Benamargo',t:'Almacén · Contado',p:'Manolo',tel:'600 33 44 02',dir:'Pol. Ind. Benamargo, nave 7',hor:'8:00–14:00'},
+    {id:'a3',n:'Tienda Huellas',t:'Tienda · Transferencia',p:'Sara',tel:'600 33 44 03',dir:'C/ Iglesia, 14',hor:'10:00–14:00 · 17:00–20:00'},
+    {id:'a4',n:'Clínica Vet El Llano',t:'Clínica veterinaria · Domiciliado',p:'Dra. Inés Vela',tel:'600 33 44 04',dir:'Av. El Llano, 30',hor:'9:30–13:30 · 17:00–20:00'},
+    {id:'a5',n:'Hípica Los Almendros',t:'Hípica · Mensual',p:'Carmen',tel:'600 33 44 05',dir:'Camino de los Almendros, km 1',hor:'8:00–18:00'}]},
+  {id:'centro',name:'Centro',desc:'Zona urbana',clients:[
+    {id:'m1',n:'Clínica Veterinaria Alameda',t:'Clínica veterinaria · Mensual',p:'Dr. Hugo Sanz',tel:'600 55 66 01',dir:'Alameda Principal, 21',hor:'9:00–20:00'},
+    {id:'m2',n:'Pet Corner',t:'Tienda · Contado',p:'Nerea',tel:'600 55 66 02',dir:'C/ Larios, 5',hor:'10:00–21:00'},
+    {id:'m3',n:'Gatos y Compañía',t:'Tienda · Transferencia',p:'Álvaro',tel:'600 55 66 03',dir:'C/ Granada, 40',hor:'10:00–14:00 · 17:00–20:30'},
+    {id:'m4',n:'Hospital Vet Ciudad',t:'Hospital · Mensual',p:'Compras: Raquel',tel:'600 55 66 04',dir:'Av. de Andalucía, 100',hor:'24 horas'},
+    {id:'m5',n:'Peluquería Patitas',t:'Peluquería · Contado',p:'Bea',tel:'600 55 66 05',dir:'C/ Carretería, 8',hor:'9:30–19:30'},
+    {id:'m6',n:'Clínica Vet Parque Norte',t:'Clínica veterinaria · Domiciliado',p:'Dra. Paula Gil',tel:'600 55 66 06',dir:'Parque Norte, bloque 2',hor:'9:00–14:00 · 16:00–20:00'}]},
+  {id:'grandes',name:'Grandes cuentas',desc:'Hospitales y cadenas',clients:[
+    {id:'g1',n:'Red Vet Sur (central)',t:'Cadena · Mensual',p:'Dpto. compras',tel:'600 77 88 01',dir:'Parque Empresarial, ed. 3',hor:'8:00–15:00'},
+    {id:'g2',n:'Hospital Veterinario 24 h',t:'Hospital · Mensual',p:'Dr. Ramón Cid',tel:'600 77 88 02',dir:'Av. Velázquez, 210',hor:'24 horas'},
+    {id:'g3',n:'Superpet Málaga',t:'Gran superficie · Transferencia',p:'Jefa de sección: Ana',tel:'600 77 88 03',dir:'C. C. Bahía, local 22',hor:'10:00–22:00'}]}
+];
+const DAYS=['Lunes','Martes','Miércoles','Jueves','Viernes'];
+const RES=[
+  {k:'pedido',l:'Pedido',c:'acc'},{k:'cobrado',l:'Cobrado',c:'ok'},
+  {k:'ped_cob',l:'Pedido y cobro',c:'ok'},{k:'sin',l:'Sin pedido',c:''},
+  {k:'pend',l:'Pendiente de cobro',c:'warn'},{k:'cerrado',l:'Cerrado',c:'info'}];
+const fmt=n=>n.toLocaleString('es-ES',{minimumFractionDigits:0,maximumFractionDigits:2})+' €';
+const todayIdx=Math.min(4,Math.max(0,(new Date().getDay()+6)%7));
+const STORE='enruta-demo-v2';
+
+function seed(){
+  const v={},k=(r,d,c)=>r+'|'+d+'|'+c;
+  v[k('costa',todayIdx,'c1')]={res:'pedido',imp:286.40,h:'09:42',m:7,nota:''};
+  v[k('costa',todayIdx,'c2')]={res:'ped_cob',imp:94.10,h:'10:15',m:11,nota:''};
+  v[k('costa',todayIdx,'c3')]={res:'sin',imp:0,h:'10:48',m:9,nota:'Tiene stock hasta la semana que viene'};
+  return {route:null,day:todayIdx,v,order:{}};
+}
+let S;
+try{S=JSON.parse(localStorage.getItem(STORE))}catch(e){}
+if(!S||!S.v)S=seed();
+if(!S.order)S.order={};
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}};
+const key=c=>S.route+'|'+S.day+'|'+c;
+const okey=()=>S.route+'|'+S.day;
+
+/* LOGIN */
+let pin='';
+['1','2','3','4','5','6','7','8','9','','0','⌫'].forEach(d=>{
+  const b=document.createElement('button');b.textContent=d;
+  if(!d)b.style.visibility='hidden';
+  if(d==='⌫')b.setAttribute('aria-label','Borrar');
+  b.addEventListener('click',()=>{
+    if(d==='⌫')pin=pin.slice(0,-1);else if(pin.length<4)pin+=d;
+    [...$('dots').children].forEach((x,i)=>x.classList.toggle('on',i<pin.length));
+    if(pin.length===4)setTimeout(()=>{show('routes');pin='';[...$('dots').children].forEach(x=>x.classList.remove('on'));},260);
+  });
+  $('pad').appendChild(b);
+});
+
+function show(w){
+  $('login').hidden=w!=='login';$('vRoutes').hidden=w!=='routes';$('vRoute').hidden=w!=='route';$('vOffice').hidden=w!=='office';
+  $('nav').hidden=!(w==='route'||w==='office');
+  $('nRoute').classList.toggle('on',w==='route');$('nOffice').classList.toggle('on',w==='office');
+  if(w==='routes')renderRoutes();if(w==='route')renderRoute();if(w==='office')renderOffice();
+  window.scrollTo(0,0);
+}
+
+function renderRoutes(){
+  const L=$('routeList');L.innerHTML='';
+  ROUTES.forEach(r=>{
+    const n=r.clients.filter(c=>S.v[r.id+'|'+todayIdx+'|'+c.id]).length;
+    const b=document.createElement('button');b.className='route';
+    b.innerHTML=`<div class="av">${r.name[0]}</div><div><strong>${r.name}</strong><span>${r.desc} · ${n}/${r.clients.length} hoy</span></div><svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>`;
+    b.onclick=()=>{S.route=r.id;S.day=todayIdx;save();show('route');};
+    L.appendChild(b);
+  });
+}
+const route=()=>ROUTES.find(r=>r.id===S.route)||ROUTES[0];
+function ordered(r){
+  const o=S.order[okey()];if(!o)return r.clients.slice();
+  const m=Object.fromEntries(r.clients.map(c=>[c.id,c]));
+  const out=o.map(id=>m[id]).filter(Boolean);
+  r.clients.forEach(c=>{if(!o.includes(c.id))out.push(c);});
+  return out;
+}
+function chipsFor(x){
+  const r=RES.find(o=>o.k===x.res);
+  let h=`<span class="chip">✓ ${x.h}</span><span class="chip ${r.c}">${r.l}</span>`;
+  if(x.imp)h+=`<span class="chip">${fmt(x.imp)}</span>`;
+  return h+`<span class="chip ok">📍 ±${x.m} m</span>`;
+}
+const ico={
+  user:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/></svg>',
+  pin:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>',
+  clock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  phone:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+  chat:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8.5 8.5 0 0 1-12.4 7.6L3 21l1.5-5.4A8.5 8.5 0 1 1 21 12z"/></svg>',
+  nav:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-8z"/></svg>'
+};
+function renderRoute(flashId){
+  const r=route();$('routeTitle').textContent='Ruta '+r.name;
+  const D=$('days');D.innerHTML='';
+  DAYS.forEach((d,i)=>{const b=document.createElement('button');b.textContent=d.slice(0,3);b.className=i===S.day?'on':'';b.onclick=()=>{S.day=i;save();renderRoute();};D.appendChild(b);});
+  const L=$('list');L.innerHTML='';
+  let n=0;
+  ordered(r).forEach((c,i)=>{
+    const x=S.v[key(c.id)];if(x)n++;
+    const el=document.createElement('div');el.className='card'+(x?' done':'')+(flashId===c.id?' flash':'');el.dataset.id=c.id;
+    el.innerHTML=`<div class="row">
+      <button class="chk" aria-label="Registrar visita a ${c.n}"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button class="cbody" aria-expanded="false"><div class="cname"><span class="num">${i+1}</span>${c.n}</div><div class="ctype">${c.t}</div>
+        ${x?`<div class="chips">${chipsFor(x)}</div>`:''}
+        ${(x&&x.nota)?`<div class="note">${x.nota}</div>`:(!x&&c.note?`<div class="note">${c.note}</div>`:'')}
+        <span class="more">Contacto <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+    </div>
+    <div class="contact"><div><div class="cin">
+      <div class="cl">${ico.user}<div>${c.p}<small>Persona de contacto</small></div></div>
+      <div class="cl">${ico.pin}<div>${c.dir}<small>Dirección</small></div></div>
+      <div class="cl">${ico.clock}<div>${c.hor}<small>Horario</small></div></div>
+      <div class="acts">
+        <a class="call" href="tel:${c.tel.replace(/ /g,'')}">${ico.phone}Llamar</a>
+        <a class="wa" href="#" onclick="return false">${ico.chat}WhatsApp</a>
+        <a href="#" onclick="return false">${ico.nav}Cómo llegar</a>
+      </div>
+      <div class="cl" style="color:var(--muted);font-size:12.5px">Tel. ${c.tel}</div>
+    </div></div></div>`;
+    el.querySelector('.chk').onclick=()=>openSheet(c);
+    const body=el.querySelector('.cbody');
+    body.onclick=()=>{if(suppressClick){suppressClick=false;return;}const o=el.classList.toggle('open');body.setAttribute('aria-expanded',o);};
+    dragify(el);
+    L.appendChild(el);
+  });
+  $('pDone').textContent=n;$('pTot').textContent=r.clients.length;
+  requestAnimationFrame(()=>{$('pBar').style.width=(r.clients.length?n/r.clients.length*100:0)+'%';});
+}
+
+/* ARRASTRAR PARA ORDENAR */
+let dragging=false,suppressClick=false;
+document.addEventListener('touchmove',e=>{if(dragging)e.preventDefault();},{passive:false});
+function dragify(card){
+  let startX=0,startY=0,active=false,raf=0,lastY=0,timer=0,pid=null;
+  const GAP=10,HOLD=380;
+  card.addEventListener('contextmenu',e=>e.preventDefault());
+  card.addEventListener('pointerdown',e=>{
+    if(e.button>0||e.target.closest('.chk,.acts'))return;
+    startX=e.clientX;startY=e.clientY;lastY=e.clientY;pid=e.pointerId;
+    clearTimeout(timer);card.classList.add('press');
+    timer=setTimeout(()=>{
+      card.classList.remove('press');active=true;dragging=true;
+      try{card.setPointerCapture(pid)}catch(_){}
+      card.classList.add('drag');card.style.transform='scale(1.03)';
+      if(navigator.vibrate)try{navigator.vibrate(20)}catch(_){}
+    },HOLD);
+  });
+  card.addEventListener('pointermove',e=>{
+    if(!active){
+      if(Math.abs(e.clientX-startX)>8||Math.abs(e.clientY-startY)>8){clearTimeout(timer);card.classList.remove('press');}
+      return;
+    }
+    lastY=e.clientY;
+    let dy=e.clientY-startY;
+    const next=card.nextElementSibling,prev=card.previousElementSibling;
+    if(next&&dy>next.offsetHeight/2+GAP/2){
+      flip(next,()=>card.parentNode.insertBefore(next,card));startY+=next.offsetHeight+GAP;dy=e.clientY-startY;renumber();
+    }else if(prev&&dy<-(prev.offsetHeight/2+GAP/2)){
+      flip(prev,()=>card.parentNode.insertBefore(card,prev));startY-=prev.offsetHeight+GAP;dy=e.clientY-startY;renumber();
+    }
+    card.style.transform=`translateY(${dy}px) scale(1.03)`;
+    // desplazamiento automático cerca de los bordes
+    cancelAnimationFrame(raf);
+    const edge=90,h=window.innerHeight;
+    const step=()=>{if(!active)return;let s=0;if(lastY<edge)s=-8;else if(lastY>h-edge)s=8;if(s){window.scrollBy(0,s);startY-=s;raf=requestAnimationFrame(step);}};
+    raf=requestAnimationFrame(step);
+  });
+  const end=()=>{
+    clearTimeout(timer);card.classList.remove('press');
+    if(!active)return;active=false;dragging=false;suppressClick=true;setTimeout(()=>{suppressClick=false;},400);cancelAnimationFrame(raf);
+    card.style.transition='transform .2s ease, box-shadow .2s';card.style.transform='';
+    setTimeout(()=>{card.style.transition='';card.classList.remove('drag');},200);
+    S.order[okey()]=[...$('list').children].map(x=>x.dataset.id);save();
+  };
+  card.addEventListener('pointerup',end);card.addEventListener('pointercancel',end);
+}
+function flip(el,mutate){
+  const a=el.getBoundingClientRect().top;mutate();const b=el.getBoundingClientRect().top;
+  el.style.transition='none';el.style.transform=`translateY(${a-b}px)`;
+  requestAnimationFrame(()=>{el.style.transition='transform .18s ease';el.style.transform='';});
+}
+function renumber(){[...$('list').children].forEach((x,i)=>{const s=x.querySelector('.num');if(s)s.textContent=i+1;});}
+
+/* HOJA */
+let cur=null,sel=null;
+function openSheet(c){
+  cur=c;const x=S.v[key(c.id)];sel=x?x.res:null;
+  $('sName').textContent=c.n;
+  const m=6+Math.floor(Math.random()*9);$('sGps').textContent='Ubicación comprobada · a '+m+' m';$('sGps').dataset.m=m;
+  $('sImp').value=x&&x.imp?String(x.imp).replace('.',','):'';$('sNota').value=x?x.nota:'';
+  const O=$('opts');O.innerHTML='';
+  RES.forEach(r=>{const b=document.createElement('button');b.textContent=r.l;b.className=sel===r.k?'on':'';b.onclick=()=>{sel=r.k;[...O.children].forEach(z=>z.classList.remove('on'));b.classList.add('on');};O.appendChild(b);});
+  $('scrim').classList.add('open');$('sheet').classList.add('open');
+}
+function closeSheet(){$('scrim').classList.remove('open');$('sheet').classList.remove('open');}
+$('scrim').onclick=closeSheet;
+$('sSave').onclick=()=>{
+  if(!sel)sel='sin';
+  const d=new Date(),h=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  const imp=parseFloat(($('sImp').value||'0').replace(/\./g,'').replace(',','.'))||0;
+  S.v[key(cur.id)]={res:sel,imp,h,m:+$('sGps').dataset.m,nota:$('sNota').value.trim(),at:Date.now()};
+  save();closeSheet();setTimeout(()=>{renderRoute(cur.id);toast('Visita guardada · la oficina ya la ve');},220);
+};
+function toast(m){const t=$('toast');$('toastT').textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* OFICINA */
+function renderOffice(){
+  let vis=0,tot=0,ped=0,cob=0,pen=0;const ev=[];
+  ROUTES.forEach(r=>r.clients.forEach(c=>{
+    tot++;const x=S.v[r.id+'|'+todayIdx+'|'+c.id];if(!x)return;vis++;
+    if(x.res==='pedido'){ped+=x.imp;pen+=x.imp;}
+    if(x.res==='ped_cob'){ped+=x.imp;cob+=x.imp;}
+    if(x.res==='cobrado')cob+=x.imp;
+    if(x.res==='pend')pen+=x.imp;
+    ev.push({x,c,r});
+  }));
+  $('kVis').textContent=vis+'/'+tot;$('kPed').textContent=fmt(ped);$('kCob').textContent=fmt(cob);$('kPen').textContent=fmt(pen);
+  ev.sort((a,b)=>b.x.h.localeCompare(a.x.h)||((b.x.at||0)-(a.x.at||0)));
+  const F=$('feed');F.innerHTML='';
+  if(!ev.length){F.innerHTML='<div class="empty">Aún no hay visitas hoy. Cuando un comercial marque una, aparece aquí al momento.</div>';return;}
+  ev.forEach((e,i)=>{
+    const r=RES.find(o=>o.k===e.x.res);
+    const d=document.createElement('div');d.className='ev'+(i===0&&e.x.at&&Date.now()-e.x.at<60000?' new':'');
+    d.innerHTML=`<time>${e.x.h}</time><div class="t"><b>${e.c.n}</b><small>Laura · Ruta ${e.r.name} · 📍 a ${e.x.m} m</small><div class="chips"><span class="chip ${r.c}">${r.l}</span>${e.x.imp?`<span class="chip">${fmt(e.x.imp)}</span>`:''}</div></div>`;
+    F.appendChild(d);
+  });
+}
+
+$('backBtn').onclick=()=>show('routes');
+$('nRoute').onclick=()=>show('route');
+$('nOffice').onclick=()=>show('office');
+$('resetBtn').onclick=()=>{S=seed();save();renderRoutes();toast('Demo reiniciada');};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+show('login');
+})();
+</script>
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
+</script>
+</body>
+</html>
